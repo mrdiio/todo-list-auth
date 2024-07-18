@@ -10,6 +10,7 @@ import {
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { Public } from 'src/common/decorators/public.decorator';
 
 @Controller('users')
 export class UsersController {
@@ -20,6 +21,7 @@ export class UsersController {
     return this.usersService.create(createUserDto);
   }
 
+  @Public()
   @Get()
   async findAll() {
     const data = await this.usersService.findAll();
@@ -29,9 +31,14 @@ export class UsersController {
     };
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.usersService.findOne(+id);
+  @Get(':username')
+  async findByUsername(@Param('username') username: string) {
+    const data = await this.usersService.findByUsername(username);
+
+    return {
+      message: 'Retrieved user',
+      data,
+    };
   }
 
   @Patch(':id')
