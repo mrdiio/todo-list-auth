@@ -7,6 +7,8 @@ import { JwtPayload } from './types/jwtPayload.type';
 import { Tokens } from './types/tokens.type';
 import { Response } from 'express';
 
+const EXPIRE_TIME = 20 * 1000;
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -37,7 +39,9 @@ export class AuthService {
 
     this.logger.log(`User ${payload.username} logged in`);
 
-    return payload;
+    const expiresIn = new Date().setTime(new Date().getTime() + EXPIRE_TIME);
+
+    return { ...payload, expiresIn };
   }
 
   async refresh(payload: any, res: Response) {
@@ -45,7 +49,9 @@ export class AuthService {
 
     this.logger.log(`User ${payload.username} token refreshed`);
 
-    return payload;
+    const expiresIn = new Date().setTime(new Date().getTime() + EXPIRE_TIME);
+
+    return { ...payload, expiresIn };
   }
 
   private async comparePassword(args: {
@@ -57,7 +63,7 @@ export class AuthService {
 
   private async getTokens(payload: JwtPayload): Promise<Tokens> {
     const access_token = await this.jwtService.signAsync(payload, {
-      expiresIn: '1h',
+      expiresIn: '20s',
       secret: this.config.get('JWT_SECRET_KEY'),
     });
 
