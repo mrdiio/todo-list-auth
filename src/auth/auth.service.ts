@@ -7,7 +7,7 @@ import { JwtPayload } from './types/jwtPayload.type';
 import { Tokens } from './types/tokens.type';
 import { Response } from 'express';
 
-const EXPIRE_TIME = 20 * 1000;
+const EXPIRE_TIME = 1000 * 60 * 60 * 1; // 1 jam
 
 @Injectable()
 export class AuthService {
@@ -63,12 +63,12 @@ export class AuthService {
 
   private async getTokens(payload: JwtPayload): Promise<Tokens> {
     const access_token = await this.jwtService.signAsync(payload, {
-      expiresIn: '20s',
+      expiresIn: '1h',
       secret: this.config.get('JWT_SECRET_KEY'),
     });
 
     const refresh_token = await this.jwtService.signAsync(payload, {
-      expiresIn: '3d',
+      expiresIn: '2d',
       secret: this.config.get('JWT_REFRESH_KEY'),
     });
 
