@@ -26,6 +26,14 @@ export class UsersService {
     });
   }
 
+  async findByEmail(email: string): Promise<User> {
+    return this.db.user.findUnique({
+      where: {
+        email,
+      },
+    });
+  }
+
   findOne(id: number) {
     return `This action returns a #${id} user`;
   }

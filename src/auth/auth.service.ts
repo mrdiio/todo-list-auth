@@ -6,6 +6,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtPayload } from './types/jwtPayload.type';
 import { Tokens } from './types/tokens.type';
 import { Response } from 'express';
+import { OAuth2Client } from 'google-auth-library';
 
 const EXPIRE_TIME = 1000 * 60 * 60 * 1; // 1 jam
 
@@ -94,5 +95,33 @@ export class AuthService {
     });
 
     return tokens;
+  }
+
+  async verifyGoogleToken(token: string, res: Response): Promise<any> {
+    const client = new OAuth2Client(this.config.get('GOOGLE_CLIENT_ID'));
+    const ticket = await client.verifyIdToken({
+      idToken: token,
+      audience: this.config.get('GOOGLE_CLIENT_ID'),
+    });
+    const payload = ticket.getPayload();
+    const email = payload.email;
+    const user = await this.userService.findByEmail(email);
+
+    if (!user) throw new UnauthorizedException('User not found');
+
+    const jwtPayload = {
+      sub: user.id,
+      username: user.username,
+      email: user.email,
+      name: user.name,
+    };
+
+    await this.setCookiesAndTokens(jwtPayload, res);
+
+    this.logger.log(`User ${jwtPayload.username} logged in`);
+
+    const expiresIn = new Date().setTime(new Date().getTime() + EXPIRE_TIME);
+
+    return { ...jwtPayload, expiresIn };
   }
 }
