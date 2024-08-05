@@ -76,7 +76,6 @@ export class AuthController {
     };
   }
 
-  //verify google id token
   @Public()
   @Get('google/verify')
   async googleVerify(

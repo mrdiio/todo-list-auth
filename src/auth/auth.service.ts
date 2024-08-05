@@ -107,7 +107,7 @@ export class AuthService {
     const email = payload.email;
     const user = await this.userService.findByEmail(email);
 
-    if (!user) throw new UnauthorizedException('User not found');
+    if (!user) throw new UnauthorizedException('Email not registered');
 
     const jwtPayload = {
       sub: user.id,
