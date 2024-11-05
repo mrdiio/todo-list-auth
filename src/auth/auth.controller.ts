@@ -57,9 +57,7 @@ export class AuthController {
   @Public()
   @Get('google/login')
   @UseGuards(GoogleOAuthGuard)
-  async googleLogin() {
-    return;
-  }
+  async googleLogin() {}
 
   @Public()
   @Get('google/callback')
@@ -68,12 +66,28 @@ export class AuthController {
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const data = await this.authService.login(req.user, res);
+    console.log('jalan dari frontend');
 
-    return {
-      message: 'Login successful',
-      data,
-    };
+    const data = await this.authService.googleLogin(req.user);
+
+    // return {
+    //   message: 'Login successful',
+    //   data,
+    // };
+
+    res.redirect(
+      'http://localhost:3001/auth/callback/google?token=' + data.access_token,
+    );
+  }
+
+  @Public()
+  @Post('validate-token')
+  async validateToken(@Req() req: Request) {
+    console.log('halooooo validate token');
+
+    console.log('validate token', req.user);
+
+    return req.user;
   }
 
   @Public()
