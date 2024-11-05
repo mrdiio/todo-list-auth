@@ -45,6 +45,53 @@ export class AuthService {
     return { ...payload, expiresIn };
   }
 
+  // async googleLogin(email: string, res: Response) {
+  //   const user = await this.userService.findByEmail(email);
+
+  //   if (!user) throw new UnauthorizedException('Email not registered');
+
+  //   const jwtPayload = {
+  //     sub: user.id,
+  //     username: user.username,
+  //     email: user.email,
+  //     name: user.name,
+  //   };
+
+  //   await this.setCookiesAndTokens(jwtPayload, res);
+
+  //   this.logger.log(`User ${jwtPayload.username} logged in`);
+
+  //   const expiresIn = new Date().setTime(new Date().getTime() + EXPIRE_TIME);
+
+  //   return { ...jwtPayload, expiresIn };
+  // }
+
+  async validateUserByGoogleEmail(email: string): Promise<any> {
+    const user = await this.userService.findByEmail(email);
+    return user ? user : null;
+  }
+
+  async googleLogin(user: any) {
+    const payload = {
+      sub: user.id,
+      username: user.email,
+      email: user.email,
+      name: user.name,
+    };
+
+    const access_token = await this.jwtService.signAsync(payload, {
+      expiresIn: '1h',
+      secret: this.config.get('JWT_SECRET_KEY'),
+    });
+
+    const refresh_token = await this.jwtService.signAsync(payload, {
+      expiresIn: '2d',
+      secret: this.config.get('JWT_REFRESH_KEY'),
+    });
+
+    return { ...payload, access_token, refresh_token };
+  }
+
   async refresh(payload: any, res: Response) {
     await this.setCookiesAndTokens(payload, res);
 
