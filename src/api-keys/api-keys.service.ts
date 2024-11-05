@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'nestjs-prisma';
 import { CreateApiKeyDto } from './dto/create-apiKey.dto';
 import * as crypto from 'crypto';
@@ -72,29 +72,38 @@ export class ApiKeysService {
   async validateApiKey(
     appKey: string,
     secretKey: string,
-    route: string,
+    requiredPermissions: string[],
   ): Promise<boolean> {
-    const key = await this.db.apiKey.findUnique({
+    const apiKeyRecord = await this.db.apiKey.findUnique({
       where: { key: appKey },
       include: { permissions: true },
     });
 
-    console.log(route.replace(/\//g, '.'));
-
-    if (
-      !key ||
-      key.secret !== secretKey ||
-      (key.expiresAt && key.expiresAt < new Date())
-    ) {
-      return false;
+    if (!apiKeyRecord) {
+      throw new ForbiddenException('API Key tidak ditemukan');
     }
 
-    const hasPermission = key.permissions.some(
-      (permission) => permission.name === route.replace(/\//g, '.'),
+    if (apiKeyRecord.secret !== secretKey) {
+      throw new ForbiddenException('Secret Key tidak valid');
+    }
+
+    const currentDate = new Date();
+    if (apiKeyRecord.expiresAt && apiKeyRecord.expiresAt < currentDate) {
+      throw new ForbiddenException('API Key telah kedaluwarsa');
+    }
+
+    console.log('apiKeyRecord', apiKeyRecord.permissions);
+
+    const hasRequiredPermissions = requiredPermissions.some((permission) =>
+      apiKeyRecord.permissions.some((p) => p.name === permission),
     );
 
-    console.log(hasPermission);
+    console.log(requiredPermissions);
 
-    return hasPermission;
+    if (!hasRequiredPermissions) {
+      throw new ForbiddenException('Izin tidak mencukupi untuk akses ini');
+    }
+
+    return true;
   }
 }

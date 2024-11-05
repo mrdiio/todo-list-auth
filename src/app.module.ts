@@ -10,6 +10,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/guards/jwt.guard';
 import { ApiKeysModule } from './api-keys/api-keys.module';
 import { PermissionsModule } from './permissions/permissions.module';
+import { ApiKeysService } from './api-keys/api-keys.service';
 
 @Module({
   imports: [
@@ -24,6 +25,10 @@ import { PermissionsModule } from './permissions/permissions.module';
   ],
   controllers: [],
   providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ApiKeysService,
+    },
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
