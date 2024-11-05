@@ -23,6 +23,7 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   Todo      Todo[]
+  ApiKey    ApiKey[]
 
   @@map("users")
 }
@@ -43,4 +44,29 @@ model Todo {
   updatedAt   DateTime @updatedAt
 
   @@map("todos")
+}
+
+model ApiKey {
+  id          String       @id @default(uuid())
+  name        String       @unique
+  key         String       @unique
+  secret      String
+  userId      String
+  user        User         @relation(fields: [userId], references: [id])
+  expiresAt   DateTime
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  permissions Permission[]
+
+  @@map("api_keys")
+}
+
+model Permission {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  apiKeys   ApiKey[]
+
+  @@map("permissions")
 }

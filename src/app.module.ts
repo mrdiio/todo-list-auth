@@ -1,10 +1,15 @@
-import { Module } from '@nestjs/common';
+import { HttpStatus, Module } from '@nestjs/common';
 import { UsersModule } from './users/users.module';
-import { PrismaModule } from 'nestjs-prisma';
+import {
+  PrismaModule,
+  providePrismaClientExceptionFilter,
+} from 'nestjs-prisma';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/guards/jwt.guard';
+import { ApiKeysModule } from './api-keys/api-keys.module';
+import { PermissionsModule } from './permissions/permissions.module';
 
 @Module({
   imports: [
@@ -14,6 +19,8 @@ import { JwtAuthGuard } from './auth/guards/jwt.guard';
     }),
     UsersModule,
     AuthModule,
+    ApiKeysModule,
+    PermissionsModule,
   ],
   controllers: [],
   providers: [
@@ -21,6 +28,11 @@ import { JwtAuthGuard } from './auth/guards/jwt.guard';
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
     },
+    providePrismaClientExceptionFilter({
+      P2000: HttpStatus.BAD_REQUEST,
+      P2002: HttpStatus.CONFLICT,
+      P2025: HttpStatus.NOT_FOUND,
+    }),
   ],
 })
 export class AppModule {}

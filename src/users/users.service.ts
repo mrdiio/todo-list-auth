@@ -9,9 +9,10 @@ export class UsersService {
   constructor(private db: PrismaService) {}
 
   create(createUserDto: CreateUserDto) {
-    console.log(createUserDto);
-
-    return 'This action adds a new user';
+    return {
+      message: 'User created',
+      data: createUserDto,
+    };
   }
 
   async findAll() {
